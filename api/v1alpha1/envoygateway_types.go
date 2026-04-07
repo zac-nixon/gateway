@@ -480,7 +480,7 @@ type EnvoyGatewayCustomProvider struct {
 
 // ResourceProviderType defines the types of custom resource providers supported by Envoy Gateway.
 //
-// +kubebuilder:validation:Enum=File
+// +kubebuilder:validation:Enum=File,Kubernetes
 type ResourceProviderType string
 
 const (
@@ -503,9 +503,8 @@ type EnvoyGatewayResourceProvider struct {
 	// +optional
 	File *EnvoyGatewayFileResourceProvider `json:"file,omitempty"`
 
-	// Kubernetes:q! defines the configuration of the Kubernetes provider. This provider retrieves Envoy configuration
-
-	// from the Kubernetes API.
+	// Kubernetes defines the configuration of the Kubernetes provider. This provider retrieves Envoy configuration
+	// from a Kubernetes API.
 	// +optional
 	Kubernetes *EnvoyGatewayKubernetesCustomProvider `json:"kubernetes,omitempty"`
 }

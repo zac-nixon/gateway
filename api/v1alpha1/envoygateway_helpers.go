@@ -6,6 +6,7 @@
 package v1alpha1
 
 import (
+	"fmt"
 	"net"
 	"strconv"
 
@@ -40,9 +41,12 @@ func (e *EnvoyGateway) SetEnvoyGatewayDefaults() {
 	if e.APIVersion == "" {
 		e.APIVersion = GroupVersion.String()
 	}
+	fmt.Println("Before Setting defaults")
 	if e.Provider == nil {
+		fmt.Println("Setting default Provider values.")
 		e.Provider = DefaultEnvoyGatewayProvider()
 	}
+
 	if e.Provider.Kubernetes == nil {
 		e.Provider.Kubernetes = &EnvoyGatewayKubernetesProvider{
 			LeaderElection: DefaultLeaderElection(),
@@ -54,6 +58,19 @@ func (e *EnvoyGateway) SetEnvoyGatewayDefaults() {
 
 	if e.Provider.Kubernetes.Client == nil {
 		e.Provider.Kubernetes.Client = DefaultKubernetesClient()
+	}
+
+	if e.Provider != nil && e.Provider.Custom != nil && e.Provider.Custom.Resource.Type == ResourceProviderTypeKubernetes {
+		if e.Provider.Custom.Resource.Kubernetes == nil {
+			e.Provider.Custom.Resource.Kubernetes = &EnvoyGatewayKubernetesCustomProvider{}
+		}
+		if e.Provider.Custom.Resource.Kubernetes.LeaderElection == nil {
+			e.Provider.Custom.Resource.Kubernetes.LeaderElection = DefaultLeaderElection()
+		}
+
+		if e.Provider.Custom.Resource.Kubernetes.Client == nil {
+			e.Provider.Custom.Resource.Kubernetes.Client = DefaultKubernetesClient()
+		}
 	}
 
 	if e.Gateway == nil {
@@ -72,6 +89,8 @@ func (e *EnvoyGateway) SetEnvoyGatewayDefaults() {
 		e.XDSServer = DefaultXDSServer()
 	}
 }
+
+func (e *EnvoyGateway) handleProviderDefaults() {}
 
 // GetEnvoyGatewayAdmin returns the EnvoyGatewayAdmin of EnvoyGateway or a default EnvoyGatewayAdmin if unspecified.
 func (e *EnvoyGateway) GetEnvoyGatewayAdmin() *EnvoyGatewayAdmin {
@@ -300,11 +319,11 @@ func DefaultEnvoyGatewayAdminAddress() *EnvoyGatewayAdminAddress {
 // GetEnvoyGatewayKubeProvider returns the EnvoyGatewayKubernetesProvider of Provider or
 // a default EnvoyGatewayKubernetesProvider if unspecified. If EnvoyGatewayProvider is not of
 // type "Kubernetes", a nil EnvoyGatewayKubernetesProvider is returned.
+// This is specifically for Kubernetes Infrastructure.
 func (r *EnvoyGatewayProvider) GetEnvoyGatewayKubeProvider() *EnvoyGatewayKubernetesProvider {
-	if r.Type != ProviderTypeKubernetes {
+	if !r.IsRunningOnKubernetes() {
 		return nil
 	}
-
 	if r.Kubernetes == nil {
 		r.Kubernetes = DefaultEnvoyGatewayKubeProvider()
 		if r.Kubernetes.LeaderElection == nil {
@@ -342,7 +361,7 @@ func (r *EnvoyGatewayProvider) GetEnvoyGatewayKubeProvider() *EnvoyGatewayKubern
 }
 
 func (r *EnvoyGatewayProvider) IsRunningOnKubernetes() bool {
-	return r.Type == ProviderTypeKubernetes
+	return r.Type == ProviderTypeKubernetes || (r.Type == ProviderTypeCustom && r.Custom.Resource.Type == ResourceProviderTypeKubernetes)
 }
 
 func (r *EnvoyGatewayProvider) IsRunningOnHost() bool {
