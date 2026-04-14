@@ -531,31 +531,8 @@ type EnvoyGatewayFileResourceProvider struct {
 
 // EnvoyGatewayKubernetesCustomProvider defines configuration for the Kubernetes provider when using a Custom provider.
 type EnvoyGatewayKubernetesCustomProvider struct {
-	// Watch holds configuration of which input resources should be watched and reconciled.
-	// +optional
-	Watch *KubernetesWatchMode `json:"watch,omitempty"`
-
-	// LeaderElection specifies the configuration for leader election.
-	// If it's not set up, leader election will be active by default, using Kubernetes' standard settings.
-	// +optional
-	LeaderElection *LeaderElection `json:"leaderElection,omitempty"`
-
-	// Client holds the configuration for the Kubernetes client.
-	Client *KubernetesClient `json:"client,omitempty"`
-
-	// TopologyInjector defines the configuration for topology injector MutatatingWebhookConfiguration
-	// +optional
-	TopologyInjector *EnvoyGatewayTopologyInjector `json:"proxyTopologyInjector,omitempty"`
-
-	// CacheSyncPeriod determines the minimum frequency at which watched resources are synced.
-	// Note that a sync in the provider layer will not lead to a full reconciliation (including translation),
-	// unless there are actual changes in the provider resources.
-	// This option can be used to protect against missed events or issues in Envoy Gateway where resources
-	// are not requeued when they should be, at the cost of increased resource consumption.
-	// Learn more about the implications of this option: https://pkg.go.dev/sigs.k8s.io/controller-runtime/pkg/cache#Options
-	// Default: 10 hours
-	// +optional
-	CacheSyncPeriod *gwapiv1.Duration `json:"cacheSyncPeriod,omitempty"`
+	// EnvoyGatewayKubernetesConfiguration points to how to communicate with the Kubernetes API.
+	EnvoyGatewayKubernetesConfiguration `json:",inline"`
 }
 
 // InfrastructureProviderType defines the types of custom infrastructure providers supported by Envoy Gateway.
