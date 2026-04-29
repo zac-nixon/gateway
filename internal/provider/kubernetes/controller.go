@@ -217,7 +217,7 @@ func newGatewayAPIController(ctx context.Context, mgr manager.Manager, cfg *conf
 	}
 
 	// When leader election is enabled, only subscribe to status updates upon acquiring leadership.
-	if cfg.EnvoyGateway.Provider.Type == egv1a1.ProviderTypeKubernetes &&
+	if cfg.EnvoyGateway.Provider.IsRunningOnKubernetes() &&
 		!ptr.Deref(cfg.EnvoyGateway.Provider.Kubernetes.LeaderElection.Disable, false) {
 		go func() {
 			select {
