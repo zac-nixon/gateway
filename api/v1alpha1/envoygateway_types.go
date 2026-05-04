@@ -353,8 +353,7 @@ type EnvoyGatewayProvider struct {
 	Custom *EnvoyGatewayCustomProvider `json:"custom,omitempty"`
 }
 
-// EnvoyGatewayKubernetesProvider defines configuration for the Kubernetes provider.
-type EnvoyGatewayKubernetesProvider struct {
+type EnvoyGatewayKubernetesInfrastructureConfiguration struct {
 	// RateLimitDeployment defines the desired state of the Envoy ratelimit deployment resource.
 	// If unspecified, default settings for the managed Envoy ratelimit deployment resource
 	// are applied.
@@ -373,26 +372,31 @@ type EnvoyGatewayKubernetesProvider struct {
 	// +optional
 	RateLimitPDB *KubernetesPodDisruptionBudgetSpec `json:"rateLimitPDB,omitempty"`
 
-	// Watch holds configuration of which input resources should be watched and reconciled.
-	// +optional
-	Watch *KubernetesWatchMode `json:"watch,omitempty"`
 	// Deploy holds configuration of how output managed resources such as the Envoy Proxy data plane
 	// should be deployed
 	// +optional
 	Deploy *KubernetesDeployMode `json:"deploy,omitempty"`
+
+	// ShutdownManager defines the configuration for the shutdown manager.
+	// +optional
+	ShutdownManager *ShutdownManager `json:"shutdownManager,omitempty"`
+
+	// TopologyInjector defines the configuration for topology injector MutatatingWebhookConfiguration
+	// +optional
+	TopologyInjector *EnvoyGatewayTopologyInjector `json:"proxyTopologyInjector,omitempty"`
+}
+
+type EnvoyGatewayKubernetesConfiguration struct {
+	// Watch holds configuration of which input resources should be watched and reconciled.
+	// +optional
+	Watch *KubernetesWatchMode `json:"watch,omitempty"`
 	// LeaderElection specifies the configuration for leader election.
 	// If it's not set up, leader election will be active by default, using Kubernetes' standard settings.
 	// +optional
 	LeaderElection *LeaderElection `json:"leaderElection,omitempty"`
 
-	// ShutdownManager defines the configuration for the shutdown manager.
-	// +optional
-	ShutdownManager *ShutdownManager `json:"shutdownManager,omitempty"`
 	// Client holds the configuration for the Kubernetes client.
 	Client *KubernetesClient `json:"client,omitempty"`
-	// TopologyInjector defines the configuration for topology injector MutatatingWebhookConfiguration
-	// +optional
-	TopologyInjector *EnvoyGatewayTopologyInjector `json:"proxyTopologyInjector,omitempty"`
 
 	// CacheSyncPeriod determines the minimum frequency at which watched resources are synced.
 	// Note that a sync in the provider layer will not lead to a full reconciliation (including translation),
@@ -403,6 +407,15 @@ type EnvoyGatewayKubernetesProvider struct {
 	// Default: 10 hours
 	// +optional
 	CacheSyncPeriod *gwapiv1.Duration `json:"cacheSyncPeriod,omitempty"`
+}
+
+// EnvoyGatewayKubernetesProvider defines configuration for the Kubernetes provider.
+type EnvoyGatewayKubernetesProvider struct {
+	// EnvoyGatewayKubernetesInfrastructureConfiguration points to the infrastructure specific configuration.
+	EnvoyGatewayKubernetesInfrastructureConfiguration `json:",inline"`
+
+	// EnvoyGatewayKubernetesConfiguration points to how to communicate with the Kubernetes API.
+	EnvoyGatewayKubernetesConfiguration `json:",inline"`
 }
 
 const (
